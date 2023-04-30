@@ -196,7 +196,7 @@ function logOutUser($userData)
 function addCourse($courseData)
 {
     global $conn;
-
+  
     $title = mysqli_real_escape_string($conn, $courseData['title']);
     $level = mysqli_real_escape_string($conn, $courseData['level']);
     $full_time_duration = mysqli_real_escape_string($conn, $courseData['full_time_duration']);
@@ -205,15 +205,13 @@ function addCourse($courseData)
     $part_time_duration = mysqli_real_escape_string($conn, $courseData['part_time_duration']);
     $start = mysqli_real_escape_string($conn, $courseData['start']);
     $location = mysqli_real_escape_string($conn, $courseData['location']);
-    $overview = mysqli_real_escape_string($conn, $courseData['overview']);
+    $overview = mysqli_real_escape_string($conn, $courseData['overview']); 
+    $modules = ($courseData['modules']);
+  
 
+  
 
-    $likes = 0;
-    $disLikes = 0;
-    date_default_timezone_set('London');
-    $date = date('m/d/Y h:i:s a', time());
-   
-
+  
     if(empty(trim($title))) {
         return response("422", "HTTP/1.0 422 Course title is required", "Course title is required");
     } else if (empty(trim($level))) {
@@ -234,20 +232,32 @@ function addCourse($courseData)
         return response("422", "HTTP/1.0 422 Course overview is required", "Course overview is required");
     }
     else {
-    
+        
             $query = "INSERT INTO `courses`(`title`, `full_time_duration`, `full_time_with_placement_duration`, `full_time_foundation_duration`, `part_time_duration`, `start`, `location`, `overview`, `level`) 
-                    VALUES ('$title','$full_time_duration','$full_time_with_placement_duration','$full_time_foundation_duration','$part_time_duration','$start','$location','$overview','$level')";
+                    VALUES ('$title','$full_time_duration','$full_time_with_placement_duration','$full_time_foundation_duration','$part_time_duration','$start','$location','$overview','$level')";          
             $query_run = mysqli_query($conn, $query);
             if ($query_run) {
-               // $query="SELECT LAST_INSERT_ID()";
-                //$query_run = mysqli_insert_id();
                 $lastinnsertedId=strval(mysqli_insert_id($conn));
+                $values = array();
+                foreach ($modules as $item) {
+                    $values[] = "('{$lastinnsertedId}','{$item['category']}','{$item['name']}','{$item['credit_hours']}','{$item['code']}','{$item['status']}','{$item['pre_requisites']}')";
+                  
+                }
+                $values = implode(", ", $values);
+                $query = "INSERT INTO `modules`(`course_id`, `category`, `name`, `credit_hours`, `code`, `status`, `pre_requisites`) VALUES {$values}";
+                $query_run = mysqli_query($conn, $query);
+                if ($query_run) {
+                // print_r($values);
                 return response("201", "HTTP/1.0 201 Course added Successfully", "Course added Successfully");
+                }else{                
+                    return response("500", "Internal Server Error", "HTTP/1.0 500 Internal Server Error");
+                }           
             } else {
                 return response("500", "Internal Server Error", "HTTP/1.0 500 Internal Server Error");
             }
        
     }
+    
 }
 
 
