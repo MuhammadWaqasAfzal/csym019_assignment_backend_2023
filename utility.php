@@ -207,6 +207,14 @@ function addCourse($courseData)
     $location = mysqli_real_escape_string($conn, $courseData['location']);
     $overview = mysqli_real_escape_string($conn, $courseData['overview']); 
     $modules = ($courseData['modules']);
+    $session = ($courseData['session']);
+    $uk_full_time_fee = ($courseData['uk_full_time_fee']);
+    $uk_part_time_fee = ($courseData['uk_part_time_fee']);
+    $uk_international_foundation_year = ($courseData['uk_international_foundation_year']);
+    $international_full_year_fee = ($courseData['international_full_year_fee']);
+    $international_integrated_foundation_year_fee = ($courseData['international_integrated_foundation_year_fee']);
+    $placement_fee = ($courseData['placement_fee']);
+    $additional_cost = ($courseData['additional_cost']);
   
 
   
@@ -233,8 +241,8 @@ function addCourse($courseData)
     }
     else {
         
-            $query = "INSERT INTO `courses`(`title`, `full_time_duration`, `full_time_with_placement_duration`, `full_time_foundation_duration`, `part_time_duration`, `start`, `location`, `overview`, `level`) 
-                    VALUES ('$title','$full_time_duration','$full_time_with_placement_duration','$full_time_foundation_duration','$part_time_duration','$start','$location','$overview','$level')";          
+            $query = "INSERT INTO `courses`(`title`, `full_time_duration`, `full_time_with_placement_duration`, `full_time_foundation_duration`, `part_time_duration`, `start`, `location`, `overview`, `level`,`session`,`uk_full_time_fee`,`uk_part_time_fee`,`uk_international_foundation_year`,`international_full_year_fee`,`international_integrated_foundation_year_fee`,`placement_fee`,`additional_cost`) 
+                    VALUES ('$title','$full_time_duration','$full_time_with_placement_duration','$full_time_foundation_duration','$part_time_duration','$start','$location','$overview','$level','$session','$uk_full_time_fee','$uk_part_time_fee','$uk_international_foundation_year','$international_full_year_fee','$international_integrated_foundation_year_fee','$placement_fee','$additional_cost')";          
             $query_run = mysqli_query($conn, $query);
             if ($query_run) {
                 $lastinnsertedId=strval(mysqli_insert_id($conn));
