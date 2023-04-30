@@ -6,23 +6,14 @@ function registerUser($userData)
 {
     global $conn;
 
-    $firstName = $userData['firstName'];
-    $lastName =  $userData['lastName'];
+    $userName = $userData['userName'];
     $email = $userData['email'];
     $password =  $userData['password'];
     $confirmPassowrd = $userData['confirmPassword'];
-    $isAdmin = $userData['admin'];
-    $gender = $userData['gender'];
-    $deviceToken = $userData['deviceToken'];
-   
-    if(empty(trim($deviceToken)))
-        $deviceToken=" ";
-   
 
-    if (empty(trim($firstName))) {
-        return response("422", "HTTP/1.0 422 First name is required", "First name is required");
-    } else if (empty(trim($lastName))) {
-        return response("422", "HTTP/1.0 422 Last name is required", "Last name is required");
+   
+    if (empty(trim($userName))) {
+        return response("422", "HTTP/1.0 422 User name is required", "User name is required");
     } else if (empty(trim($email))) {
         return response("422", "HTTP/1.0 422 Email is required", "Email is required");
     } else if (empty(trim($password))) {
@@ -33,7 +24,7 @@ function registerUser($userData)
         return response("422", "HTTP/1.0 422 Passwords do not match", "Passwords do not match");
     }
     else {
-        $userExits = "SELECT * FROM Users WHERE email = '$email'";
+        $userExits = "SELECT * FROM users WHERE email = '$email'";
         $query_run = $conn->query($userExits);
         if (mysqli_num_rows($query_run) > 0) {
             $data = [
@@ -43,8 +34,8 @@ function registerUser($userData)
             header("HTTP/1.0 404 Email Already Exits");
             return json_encode($data);
         } else {
-            $query = "INSERT INTO Users (FirstName,LastName,Password,Email,Gender,Admin,FCMToken)
-            VALUES ('$firstName','$lastName','$password','$email','$gender','$isAdmin','$deviceToken')";
+            $query = "INSERT INTO users (userName,password,email)
+            VALUES ('$userName','$password','$email')";
             $query_run = mysqli_query($conn, $query);           
             if ($query_run) {
                 $query = "SELECT * FROM Users WHERE email = '$email' AND password = '$password'";
@@ -76,11 +67,6 @@ function loginUser($userData)
 
     $email = mysqli_real_escape_string($conn, $userData['email']);
     $password = mysqli_real_escape_string($conn, $userData['password']);
-    $deviceToken = $userData['deviceToken'];
-
-    if (empty(trim($deviceToken))) {
-        $deviceToken = " ";
-    }
 
 
     if (empty(trim($email))) {
@@ -92,13 +78,9 @@ function loginUser($userData)
         $result = mysqli_query($conn, $query);
         if ($result) {
             if (mysqli_num_rows($result) > 0) {
-                $query = "UPDATE `Users` SET FCMToken='$deviceToken' WHERE Email = '$email'";
-                mysqli_query($conn, $query);
                 $query = "SELECT * FROM Users WHERE email = '$email' AND password = '$password'";
                 $result = mysqli_query($conn, $query);
                 $res = mysqli_fetch_assoc($result);
-                //echo $row;
-
                 $data = [
                     'status' => 200,
                     'message' => "User logged in Successfully",
@@ -279,32 +261,11 @@ function addCourse($courseData)
 function getAllCourses($data)
 {
     global $conn;
-    $userId = mysqli_real_escape_string($conn, $data['userId']);
-    $query = "SELECT * FROM Users Where id!='$userId'";
+    $query = "SELECT * FROM courses";
     $query_run = mysqli_query($conn, $query);
 
     if ($query_run) {
         $res = mysqli_fetch_all($query_run, MYSQLI_ASSOC);
-        
-        for ($x = 0; $x < count($res); $x++) {
-            $row = $res[$x];
-            $senderId =  $row['SenderId'];
-            $receiverId =  $row['ReceiverId'];
-            $query = "SELECT * FROM Users where Id='$senderId' ";
-            $query_run = mysqli_query($conn, $query);
-            $userRes = mysqli_fetch_all($query_run, MYSQLI_ASSOC);
-            $res[$x]["SenderName"] =  $userRes[0]["FirstName"] ." ". $userRes[0]["LastName"] ;
-            $res[$x]["SenderGender"] =  $userRes[0]["Gender"];
-
-            $query = "SELECT * FROM Users where Id='$receiverId' ";
-            $query_run = mysqli_query($conn, $query);
-            $userRes = mysqli_fetch_all($query_run, MYSQLI_ASSOC);
-            $res[$x]["ReceiverName"] =  $userRes[0]["FirstName"] . " ".$userRes[0]["LastName"] ;
-            $res[$x]["ReceiverGender"] =  $userRes[0]["Gender"];
-
-
-        }
-
         $data = [
             'status' => 200,
             'message' => "All Users",

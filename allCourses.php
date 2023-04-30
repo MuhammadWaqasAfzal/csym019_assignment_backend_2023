@@ -11,7 +11,7 @@ include('utility.php');
 
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 
-if ($requestMethod == "POST") {
+if ($requestMethod == "GET") {
     $inputData = json_decode(file_get_contents("php://input"), true);
     if (empty($inputData)) {
        $courses =  getAllCourses($_POST);
