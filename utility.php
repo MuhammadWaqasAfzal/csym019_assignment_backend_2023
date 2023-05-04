@@ -191,15 +191,7 @@ function addCourse($courseData)
     $modules = ($courseData['modules']);
     $fees = ($courseData['fees']);
     $entryRequirements = mysqli_real_escape_string($conn,($courseData['entryRequirements']));
-    // $session = ($courseData['session']);
-    // $uk_full_time_fee = ($courseData['uk_full_time_fee']);
-    // $uk_part_time_fee = ($courseData['uk_part_time_fee']);
-    // $uk_international_foundation_year = ($courseData['uk_international_foundation_year']);
-    // $international_full_year_fee = ($courseData['international_full_year_fee']);
-    // $international_integrated_foundation_year_fee = ($courseData['international_integrated_foundation_year_fee']);
-    // $placement_fee = ($courseData['placement_fee']);
-    // $additional_cost = ($courseData['additional_cost']);
-  
+
   
 
   
@@ -223,30 +215,34 @@ function addCourse($courseData)
         return response("422", "HTTP/1.0 422 Course overview is required", "Course overview is required");
     }
     else {
-        
+
             $query = "INSERT INTO `courses`(`title`, `full_time_duration`, `full_time_with_placement_duration`,
-             `full_time_foundation_duration`, `part_time_duration`, `start`, `location`, `overview`, `level`,`entryRequirements`) 
+             `full_time_foundation_duration`, `part_time_duration`, `start`, `location`, `overview`, `level`,`entry_requirements`) 
                     VALUES ('$title','$full_time_duration','$full_time_with_placement_duration','$full_time_foundation_duration','$part_time_duration','$start','$location','$overview','$level','$entryRequirements')";          
+           // echo ($query);
             $query_run = mysqli_query($conn, $query);
+            //return response("201", "HTTP/1.0 201 Course added Successfully", "Course added Successfully");
+
+            //echo ($query_run);
             if ($query_run) {
+               
                 //foreign key for modules and fees tables
                 $lastinnsertedId=strval(mysqli_insert_id($conn));
                 $values = array();
                 foreach ($modules as $item) {
                     $values[] = "('{$lastinnsertedId}','{$item['category']}','{$item['name']}','{$item['credit_hours']}','{$item['code']}','{$item['status']}','{$item['pre_requisites']}')";
                 }
+
                 $values = implode(", ", $values);
                 $query = "INSERT INTO `modules`(`course_id`,`category`, `name`, `credit_hours`, `code`, `status`, `pre_requisites`) VALUES {$values}";
                 $query_run = mysqli_query($conn, $query);
+               
                 if ($query_run) {
                     $feeValues = array();
                     foreach ($fees as $item) {
                         $feeValues[] = "('{$lastinnsertedId}','{$item['session']}','{$item['uk_full_time_fee']}','{$item['uk_part_time_fee']}','{$item['uk_international_foundation_year']}','{$item['international_full_year_fee']}','{$item['international_integrated_foundation_year_fee']}','{$item['placement_fee']}','{$item['additional_cost']}')";
                     }
-                   
-                  
                     $feeValues = implode(", ", $feeValues);
-                   // echo(sizeof($feeValues));
                     $query = "INSERT INTO `fees`(`course_id`, `session`, `uk_full_time_fee`, `uk_part_time_fee`, `uk_international_foundation_year`, `international_full_year_fee`,`international_integrated_foundation_year_fee`, `placement_fee`, `additional_cost`) VALUES {$feeValues}";
                     $query_run = mysqli_query($conn, $query);
                     if ($query_run) {
@@ -264,12 +260,6 @@ function addCourse($courseData)
     }
     
 }
-
-
-
-
-
-
 
 
 
@@ -294,15 +284,7 @@ function getAllCourses($data)
             $feesRes = mysqli_fetch_all($query_run, MYSQLI_ASSOC);
             $res[$x]["fees"] = $feesRes; 
         }
-
         
-
-
-       
-       
-        
-       
-     
         $data = [
             'status' => 200,
             'message' => "All Courses",
