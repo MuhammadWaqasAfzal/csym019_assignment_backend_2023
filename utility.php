@@ -138,17 +138,17 @@ function resetPassword($userData)
 
 
 
-function logOutUser($userData)
+function logOutUser($courseData)
 {
     
     global $conn;
    
-    $email = mysqli_real_escape_string($conn, $userData['email']);
+    $email = mysqli_real_escape_string($conn, $courseData['email']);
    
     if (empty(trim($email))) {
         return response("422", "HTTP/1.0 422 Email is required", "Email is required");
     }else {
-        $userExits = "SELECT * FROM Users WHERE email = '$email'";
+        $userExits = "SELECT * FROM users WHERE email = '$email'";
         $query_run = $conn->query($userExits);
         if (mysqli_num_rows($query_run) > 0) {
             $query_run = null;
@@ -171,6 +171,35 @@ function logOutUser($userData)
             }
         } else {
             return response("404", "HTTP/1.0 404 Invalid Email", "Invalid Email");
+        }
+    }
+}
+
+function deleteCourse($courseData)
+{
+    
+    global $conn;
+   
+    $courseId = mysqli_real_escape_string($conn, $courseData['course_id']);
+   
+    if (empty(trim($courseId))) {
+        return response("422", "HTTP/1.0 422 Email is required", "Course Id is required");
+    }else {
+        $courseExits = "SELECT * FROM courses WHERE Id = '$courseId'";
+        $query_run = $conn->query($courseExits);
+        if (mysqli_num_rows($query_run) > 0) {
+            $deleteCourse = "DELETE FROM `courses` WHERE  Id = '$courseId'";
+            $query_run = $conn->query($deleteCourse);
+            if ($query_run) {
+                return response("200", "HTTP/1.0 200 Course Deleted Successfully", "Course Deleted Successfully");
+            }
+            else{
+                return response("500", "HTTP/1.0 500 Internal Server Error", "Internal Server Error");
+
+            }
+        }
+       else {
+            return response("404", "HTTP/1.0 404 Invalid Course Id", "Invalid Course Id");
         }
     }
 }
