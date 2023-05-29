@@ -214,15 +214,14 @@ function addCourse($courseData)
     $full_time_with_placement_duration = mysqli_real_escape_string($conn, $courseData['full_time_with_placement_duration']);
     $full_time_foundation_duration = mysqli_real_escape_string($conn, $courseData['full_time_foundation_duration']);
     $part_time_duration = mysqli_real_escape_string($conn, $courseData['part_time_duration']);
-    $start = mysqli_real_escape_string($conn, $courseData['start']);
+    $start = ($courseData['start']);
     $location = mysqli_real_escape_string($conn, $courseData['location']);
     $overview = mysqli_real_escape_string($conn, $courseData['overview']); 
     $modules = ($courseData['modules']);
     $fees = ($courseData['fees']);
     $entryRequirements = mysqli_real_escape_string($conn,($courseData['entryRequirements']));
 
-  
-
+    
   
     if(empty(trim($title))) {
         return response("422", "HTTP/1.0 422 Course title is required", "Course title is required");
@@ -248,11 +247,7 @@ function addCourse($courseData)
             $query = "INSERT INTO `courses`(`title`, `full_time_duration`, `full_time_with_placement_duration`,
              `full_time_foundation_duration`, `part_time_duration`, `start`, `location`, `overview`, `level`,`entry_requirements`) 
                     VALUES ('$title','$full_time_duration','$full_time_with_placement_duration','$full_time_foundation_duration','$part_time_duration','$start','$location','$overview','$level','$entryRequirements')";          
-           // echo ($query);
             $query_run = mysqli_query($conn, $query);
-            //return response("201", "HTTP/1.0 201 Course added Successfully", "Course added Successfully");
-
-            //echo ($query_run);
             if ($query_run) {
                
                 //foreign key for modules and fees tables
@@ -266,14 +261,19 @@ function addCourse($courseData)
                 $query = "INSERT INTO `modules`(`course_id`,`category`, `name`, `credit_hours`, `code`, `status`, `pre_requisites`) VALUES {$values}";
                 $query_run = mysqli_query($conn, $query);
                
+               
                 if ($query_run) {
+                  
                     $feeValues = array();
                     foreach ($fees as $item) {
-                        $feeValues[] = "('{$lastinnsertedId}','{$item['session']}','{$item['uk_full_time_fee']}','{$item['uk_part_time_fee']}','{$item['uk_international_foundation_year']}','{$item['international_full_year_fee']}','{$item['international_integrated_foundation_year_fee']}','{$item['placement_fee']}','{$item['additional_cost']}')";
+                        $feeValues[] = "('{$lastinnsertedId}','{$item['session']}','{$item['uk_full_time_fee']}','{$item['uk_part_time_fee']}','{$item['uk_part_time_year']}','{$item['uk_part_time_per_credit_hour']}','{$item['uk_part_time_total_credit_hours']}','{$item['uk_international_foundation_year']}','{$item['international_full_year_fee']}','{$item['international_integrated_foundation_year_fee']}','{$item['placement_fee']}','{$item['additional_cost']}')";
                     }
+    
                     $feeValues = implode(", ", $feeValues);
-                    $query = "INSERT INTO `fees`(`course_id`, `session`, `uk_full_time_fee`, `uk_part_time_fee`, `uk_international_foundation_year`, `international_full_year_fee`,`international_integrated_foundation_year_fee`, `placement_fee`, `additional_cost`) VALUES {$feeValues}";
+                    $query = "INSERT INTO `fees` (`course_id`, `session`, `uk_full_time_fee`, `uk_part_time_fee`,`uk_part_time_year`,`uk_part_time_per_credit_hour`,`uk_part_time_total_credit_hours`, `uk_international_foundation_year`, `international_full_year_fee`,`international_integrated_foundation_year_fee`, `placement_fee`, `additional_cost`) VALUES {$feeValues}";
+                   
                     $query_run = mysqli_query($conn, $query);
+                 
                     if ($query_run) {
                         return response("201", "HTTP/1.0 201 Course added Successfully", "Course added Successfully");
                     }else{
