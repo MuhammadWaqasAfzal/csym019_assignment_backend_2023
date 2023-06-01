@@ -136,8 +136,6 @@ function resetPassword($userData)
     }
 }
 
-
-
 function logOutUser($courseData)
 {
     
@@ -179,15 +177,16 @@ function deleteCourse($courseData)
 {
     
     global $conn;
-   
     $courseId = mysqli_real_escape_string($conn, $courseData['course_id']);
    
     if (empty(trim($courseId))) {
         return response("422", "HTTP/1.0 422 Email is required", "Course Id is required");
     }else {
-        $courseExits = "SELECT * FROM courses WHERE Id = '$courseId'";
+        $courseExits = "DELETE  FROM fees WHERE course_id = '$courseId'";
         $query_run = $conn->query($courseExits);
-        if (mysqli_num_rows($query_run) > 0) {
+        $courseExits = "DELETE  FROM modules WHERE course_id = '$courseId'";
+        $query_run = $conn->query($courseExits);
+        if ($query_run) {
             $deleteCourse = "DELETE FROM `courses` WHERE  Id = '$courseId'";
             $query_run = $conn->query($deleteCourse);
             if ($query_run) {
@@ -247,7 +246,10 @@ function addCourse($courseData)
             $query = "INSERT INTO `courses`(`title`, `full_time_duration`, `full_time_with_placement_duration`,
              `full_time_foundation_duration`, `part_time_duration`, `start`, `location`, `overview`, `level`,`entry_requirements`) 
                     VALUES ('$title','$full_time_duration','$full_time_with_placement_duration','$full_time_foundation_duration','$part_time_duration','$start','$location','$overview','$level','$entryRequirements')";          
-            $query_run = mysqli_query($conn, $query);
+          
+           
+           try {
+           $query_run = mysqli_query($conn, $query);
             if ($query_run) {
                
                 //foreign key for modules and fees tables
@@ -285,12 +287,54 @@ function addCourse($courseData)
             } else {
                 return response("500", "Internal Server Error", "HTTP/1.0 500 Internal Server Error");
             }
+        }catch (mysqli_sql_exception $e) {
+            // Handle the unique constraint error
+            if ($e->getCode() === 1062) {
+                return response("1062", "Course Name Already Exists.", "HTTP/1.0 1062 Course Name Already Exists.");
+
+              // Additional error handling or actions
+            } else {
+              // Handle other types of exceptions or errors
+              echo "An error occurred: " . $e->getMessage();
+            }
+          }
        
     }
+    
     
 }
 
 
+function updateCourse($courseData){
+    global $conn;
+  
+    $courseId = mysqli_real_escape_string($conn, $courseData['id']);
+
+    if(empty(trim($courseId))) {
+        return response("422", "HTTP/1.0 422 Course Id is required", "Course Id is required");
+    }
+    else
+    {
+
+        $deleteModules = "DELETE FROM `modules` WHERE  Id = '$courseId'";
+        $query_run = $conn->query($deleteModules);
+
+        $deleteFees = "DELETE FROM `fees` WHERE  Id = '$courseId'";
+        $query_run = $conn->query($deleteFees);
+
+
+            $deleteCourse = "DELETE FROM `courses` WHERE  Id = '$courseId'";
+            $query_run = $conn->query($deleteCourse);
+            if ($query_run) {
+                addCourse($courseData);
+                return response("200", "HTTP/1.0 200 Course Updated Successfully", "Course Updated Successfully");
+            }
+            else{
+                return response("500", "HTTP/1.0 500 Internal Server Error", "Internal Server Error");
+
+            }
+     }
+}
 
 function getAllCourses($data)
 {
